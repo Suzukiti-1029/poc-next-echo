@@ -1,0 +1,81 @@
+services:
+  web:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    container_name: nextjs
+    ports:
+      - 3000:3000
+      - 6006:6006
+    restart: on-failure
+    command: npm run dev
+    volumes:
+      - type: bind
+        source: ./frontend/app
+        target: /usr/src/app
+    environment:
+      # ホットリロード用
+      - WATCHPACK_POLLING=true
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: golang
+    ports:
+      - 8080:8080
+      - 2345:2345
+    restart: on-failure
+    # ホットリロードコマンド実行
+    command: air -c .air.toml
+    volumes:
+      - type: bind
+        source: ./backend/app
+        target: /usr/src/app
+      - type: bind
+        source: ./database/sql
+        target: /usr/src/app/migrations
+    env_file:
+      - .env.local
+      - ./backend/.env.local
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    build:
+      context: ./database/
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: mysql
+    ports:
+      - 3306:3306
+    restart: always
+    volumes:
+      - type: bind
+        source: ./database/sql
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: database
+        target: /var/lib/mysql
+    env_file:
+      - .env.local
+      - ./database/.env.local
+    healthcheck:
+      test: mysqladmin ping
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  cache:
+    image: redis:7.4-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - type: volume
+        source: cache
+        target: /data
+volumes:
+  database:
+    name: database-data
+  cache:
+    name: cache-data
