@@ -32,6 +32,23 @@ components:
           description: パスワード
           example: # TODO
 paths:
+  /:
+    description: ヘルスチェック
+    get:
+      summary: ヘルスチェック
+      responses:
+        "200":
+          description: ヘルスOK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: ok
   /users:
     description: ユーザーリスト
     get:
