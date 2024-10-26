@@ -2,7 +2,11 @@ module sampleapi
 
 go 1.23.2
 
-require github.com/labstack/echo/v4 v4.12.0
+require (
+	github.com/aws/aws-lambda-go v1.47.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
+	github.com/labstack/echo/v4 v4.12.0
+)
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
